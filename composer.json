@@ -1,0 +1,69 @@
+{
+    "name": "lunar-bulbank/addon",
+    "version": "0.1.0",
+    "type": "project",
+    "description": "BulBank payment functionality for Lunar.",
+    "keywords": [
+        "lunarphp",
+        "laravel",
+        "ecommerce",
+        "e-commerce",
+        "headless",
+        "store",
+        "shop",
+        "cart",
+        "stripe",
+        "BulBank",
+        "BulBank payment"
+    ],
+    "license": "MIT",
+    "source": {
+        "type": "git",
+        "url": "https://github.com/SteliyanPStoyanov/lunar-bulbank-payment.git",
+        "reference": ""
+    },
+    "authors": [
+        {
+            "name": "Steliyan Stoyanov",
+            "homepage": "https://github.com/SteliyanPStoyanov"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "lunarphp/lunar": "^0.6|^0.7|^0.8|^1.0",
+        "livewire/livewire": "^2.0",
+        "myclabs/php-enum": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "mockery/mockery": "^1.4.4",
+        "orchestra/testbench": "^6.0|^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lunar\\BulBank\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Lunar\\BulBank\\Tests\\": "packages/lunar-bulbank/addon/tests/"
+        }
+    },
+    "extra": {
+        "lunar": {
+            "name": "BulBank"
+        },
+        "laravel": {
+            "providers": [
+                "Lunar\\BulBank\\BulBankServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
