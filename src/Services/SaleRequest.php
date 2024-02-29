@@ -14,32 +14,32 @@ class SaleRequest extends Request implements RequestInterface
     /**
      * @var string
      */
-    protected string $merchantUrl;
+    protected  $merchantUrl;
 
     /**
      * @var string
      */
-    protected string $merchantName;
+    protected  $merchantName;
 
     /**
      * @var string
      */
-    protected string $emailAddress;
+    protected  $emailAddress;
 
     /**
      * @var string
      */
-    protected string $countryCode;
+    protected  $countryCode;
 
     /**
      * @var string
      */
-    protected string $merchantGMT;
+    protected  $merchantGMT;
 
     /**
      * @var string
      */
-    protected string $adCustBorOrderId;
+    protected  $adCustBorOrderId;
 
     /**
      * Sale constructor.
@@ -229,7 +229,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getCountryCode(): string
+    public function getCountryCode(): ?string
     {
         return $this->countryCode;
     }
@@ -280,7 +280,7 @@ class SaleRequest extends Request implements RequestInterface
     /**
      * @return string
      */
-    public function getMerchantName(): string
+    public function getMerchantName(): ?string
     {
         return $this->merchantName;
     }
@@ -301,7 +301,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getMerchantUrl(): string
+    public function getMerchantUrl(): ?string
     {
         return $this->merchantUrl;
     }
@@ -329,7 +329,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getEmailAddress(): string
+    public function getEmailAddress(): ?string
     {
         return $this->emailAddress;
     }
@@ -380,7 +380,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getAdCustBorOrderId(): string
+    public function getAdCustBorOrderId(): ?string
     {
         return $this->adCustBorOrderId;
     }
