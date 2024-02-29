@@ -24,10 +24,10 @@ class BulBankServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/../resources', 'bulbank');
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
-        $this->mergeConfigFrom(__DIR__ . '/../config/bulbank.php', 'lunar.bulbank');
+        $this->mergeConfigFrom(__DIR__ . '/../config/bulbank.php', 'bulbank');
 
         $this->publishes([
-            __DIR__ . '/../config/bulbank.php' => config_path('lunar/bulbank.php'),
+            __DIR__ . '/../config/bulbank.php' => config_path('bulbank.php'),
         ], 'lunar.bulbank.config');
 
         $this->registerLivewireComponents();
