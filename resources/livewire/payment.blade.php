@@ -1,6 +1,7 @@
 <div>
         @php
             $saleRequest = (new Lunar\BulBank\Services\SaleRequest())
+                   ->inDevelopment() // set to development
                    ->setSigningSchemaMacGeneral()
                    ->setAmount(1.32)
                    ->setOrder(123456)
