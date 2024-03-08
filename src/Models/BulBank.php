@@ -345,7 +345,7 @@ abstract class BulBank
             $signature .= mb_strlen($value) . $value;
         }
 
-        if ($isResponse && $this->isSigningSchemaMacGeneral()) {
+        if ($this->isSigningSchemaMacGeneral()) {
             // Отново заради тъпото поле RFU (Reserved for Future Use)
             $signature .= '-';
         }
