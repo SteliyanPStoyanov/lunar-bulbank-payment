@@ -21,14 +21,12 @@ abstract class Response extends BulBank
     private array $responseData;
 
     /**
-     * Get verified data by key
-     *
-     * @param string $key Data key.
+     * Get verified data by key        
      *
      * @return mixed
      * @throws SignatureException|ParameterValidationException|DataMissingException
      */
-    public function getVerifiedData(string $key): mixed
+    public function getVerifiedData($key): mixed
     {
 
         if (!$this->dataIsVerified) {
