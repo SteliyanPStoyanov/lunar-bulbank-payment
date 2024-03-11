@@ -28,7 +28,7 @@ final class CheckStatusController extends Controller
         $statusCheckResponse = $statusCheckRequest->send();
 
 // get data from borica response
-$verifiedResponseData = $statusCheckResponse->getResponseData();
-        dd( $verifiedResponseData);
+        $verifiedResponseData = $statusCheckResponse->getResponseData(false);
+        dd($verifiedResponseData);
     }
 }
