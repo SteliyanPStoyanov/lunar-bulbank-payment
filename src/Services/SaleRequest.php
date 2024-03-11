@@ -180,7 +180,7 @@ class SaleRequest extends Request implements RequestInterface
             $this->getOrder(),
             $this->getSignatureTimestamp(),
             $this->getNonce()
-        ]);
+        ] , true);
     }
 
     /**

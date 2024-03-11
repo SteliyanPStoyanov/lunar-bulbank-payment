@@ -290,9 +290,9 @@ abstract class BulBank
      * @return string
      * @throws SignatureException
      */
-    protected function getPrivateSignature(array $data): string
+    protected function getPrivateSignature(array $data , $responce = false): string
     {
-        $signature = $this->getSignatureSource($data);
+        $signature = $this->getSignatureSource($data,$responce);
 
         /*
          * sign signature
