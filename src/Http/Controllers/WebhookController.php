@@ -10,6 +10,11 @@ final class WebhookController extends Controller
 {
     public function __invoke(Request $request)
     {
-      dd($request);
+              $saleResponse = (new SaleResponse())
+            ->setPublicKey(base_path(config('bulbank.public_cer_path')))
+            ->setSigningSchemaMacGeneral(); // use MAC_GENERAL
+
+        dd($request, $saleResponse);
+     
     }
 }
