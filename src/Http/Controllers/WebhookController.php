@@ -28,7 +28,7 @@ final class WebhookController extends Controller
 
         $responseData = $saleResponse->getResponseData(false);
 
-        if ($responseData['RC'] === 0) {
+        if ($responseData['RC'] === '00') {
             $cartId = str_replace("0", "", $responseData['ORDER']);
             Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
                 'ip' => app()->request->ip(),
