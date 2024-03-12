@@ -33,7 +33,7 @@ final class WebhookController extends Controller
             Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
                 'ip' => app()->request->ip(),
                 'accept' => app()->request->header('Accept'),
-                'ad' => $responseData
+                'responseData' => $responseData
             ]))->authorize();
         } else {
             CartSession::forget();

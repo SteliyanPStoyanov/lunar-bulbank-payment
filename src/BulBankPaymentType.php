@@ -90,6 +90,7 @@ class BulBankPaymentType extends AbstractPayment
             'type' => 'capture',
             'driver' => 'bulbank',
             'amount' => $transaction['AMOUNT'],
+            'reference' => $transaction['ORDER'],
             'status' => $transaction['STATUSMSG'],
             'notes' => $transaction['TERMINAL'],
             'card_type' => $transaction['CARD_BRAND'],
