@@ -5,6 +5,7 @@ namespace Lunar\BulBank;
 use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\Base\DataTransferObjects\PaymentCapture;
 use Lunar\Base\DataTransferObjects\PaymentRefund;
+use Lunar\BulBank\DataTransferObjects\PaymentCancel;
 use Lunar\Exceptions\DisallowMultipleCartOrdersException;
 use Lunar\Models\Transaction;
 use Lunar\PaymentTypes\AbstractPayment;
@@ -91,7 +92,7 @@ class BulBankPaymentType extends AbstractPayment
             'success' => $success,
             'type' => 'capture',
             'driver' => 'bulbank',
-            'amount' => $transaction['AMOUNT'],
+            'amount' => $transaction['AMOUNT'] * 100,
             'reference' => $transaction['ORDER'],
             'status' => $transaction['STATUSMSG'],
             'notes' => $transaction['TERMINAL'],
@@ -111,5 +112,34 @@ class BulBankPaymentType extends AbstractPayment
             ],
         ];
         $this->order->transactions()->create($data);
+    }
+
+    public function cancel(): PaymentCancel
+    {
+        $this->order = $this->cart->draftOrder ?: $this->cart->completedOrder;
+
+        if (!$this->order) {
+            try {
+                $this->order = $this->cart->createOrder();
+            } catch (DisallowMultipleCartOrdersException $e) {
+                return new PaymentCancel(
+                    success: false,
+                    message: $e->getMessage(),
+                );
+            }
+        }
+
+
+        $this->order->update([
+            'status' => 'payment-cancel',
+            'placed_at' => now(),
+        ]);
+
+
+        return new PaymentCancel(
+            success: (bool)$this->order->placed_at,
+            message: 'bulbank payment',
+            orderId: $this->order->id
+        );
     }
 }
