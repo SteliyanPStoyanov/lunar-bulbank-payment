@@ -6,7 +6,6 @@ use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\Base\DataTransferObjects\PaymentCapture;
 use Lunar\Base\DataTransferObjects\PaymentRefund;
 use Lunar\Exceptions\DisallowMultipleCartOrdersException;
-use Lunar\Models\Order;
 use Lunar\Models\Transaction;
 use Lunar\PaymentTypes\AbstractPayment;
 
@@ -36,10 +35,13 @@ class BulBankPaymentType extends AbstractPayment
                 );
             }
         }
-        $this->storeTransaction(
-            transaction: $this->data['responseData'],
-            success: 'Ok'
-        );
+        if ($this->order->transactions()->count() === 0) {
+            $this->storeTransaction(
+                transaction: $this->data['responseData'],
+                success: 'Ok'
+            );
+        }
+
 
         $this->order->update([
             'status' => 'payment-received',
@@ -95,15 +97,15 @@ class BulBankPaymentType extends AbstractPayment
             'notes' => $transaction['TERMINAL'],
             'card_type' => $transaction['CARD_BRAND'],
             'last_four' => $transaction['CARD'],
-            'captured_at' =>  now() ,
+            'captured_at' => now(),
             'meta' => [
                 'bul_bank_info' => [
-                    'approval' =>$transaction['APPROVAL'],
-                    'rrn' =>$transaction['RRN'],
-                    'int_ref' =>$transaction['INT_REF'],
-                    'card' =>$transaction['CARD'],
-                    'eci' =>$transaction['ECI'],
-                    'nonce' =>$transaction['NONCE'],
+                    'approval' => $transaction['APPROVAL'],
+                    'rrn' => $transaction['RRN'],
+                    'int_ref' => $transaction['INT_REF'],
+                    'card' => $transaction['CARD'],
+                    'eci' => $transaction['ECI'],
+                    'nonce' => $transaction['NONCE'],
 
                 ],
             ],

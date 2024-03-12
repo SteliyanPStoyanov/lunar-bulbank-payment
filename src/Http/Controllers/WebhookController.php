@@ -4,21 +4,20 @@ namespace Lunar\BulBank\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Lunar\Base\DataTransferObjects\PaymentAuthorize;
+use Illuminate\Support\Facades\Log;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
-use Lunar\BulBank\Exceptions\SendingException;
 use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Services\SaleResponse;
-use Lunar\Facades\CartSession;
 use Lunar\Facades\Payments;
 use Lunar\Models\Cart;
 
 final class WebhookController extends Controller
 {
     /**
-     * @throws SignatureException
-     * @throws SendingException
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|void
      * @throws ParameterValidationException
+     * @throws SignatureException
      */
     public function __invoke(Request $request)
     {
@@ -27,17 +26,21 @@ final class WebhookController extends Controller
             ->setSigningSchemaMacGeneral(); // use MAC_GENERAL
 
         $responseData = $saleResponse->getResponseData(false);
+        Log::channel('bul-bank-log')->error("bul-bank" . json_encode($responseData));
 
         if ($responseData['RC'] === '00') {
             $cartId = str_replace("0", "", $responseData['ORDER']);
-            Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
+            $payment = Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
                 'ip' => app()->request->ip(),
                 'accept' => app()->request->header('Accept'),
                 'responseData' => $responseData
             ]))->authorize();
+
+            if ($payment->success) {
+                return redirect()->route('checkout-success.view');
+            }
         } else {
-            CartSession::forget();
-            throw new SendingException(json_encode($responseData));
+            return redirect()->route('checkout-error.view');
         }
 
     }
