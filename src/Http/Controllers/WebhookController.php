@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Services\SaleResponse;
+use Lunar\Facades\CartSession;
 use Lunar\Facades\Payments;
 use Lunar\Models\Cart;
 
@@ -49,9 +50,9 @@ final class WebhookController extends Controller
 
 
             if ($payment->success) {
-                return redirect()->route('checkout-error.view');
+                CartSession::forget();
+                return redirect()->route('checkout-error.view', ['orderId' => $payment->orderId]);
             }
-
         }
 
     }

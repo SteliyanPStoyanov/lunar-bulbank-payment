@@ -138,7 +138,10 @@ class BulBankPaymentType extends AbstractPayment
             ]
         ]);
 
-        $this->cart->draftOrder($this->order->id);
+        $this->cart->update([
+            'order_id' => $this->order->id
+        ]);
+
 
         return new PaymentCancel(
             success: (bool)$this->order->placed_at,
