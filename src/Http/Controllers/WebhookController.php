@@ -40,7 +40,18 @@ final class WebhookController extends Controller
                 return redirect()->route('checkout-success.view');
             }
         } else {
-            return redirect()->route('checkout-error.view');
+            $cartId = str_replace("0", "", $responseData['ORDER']);
+            $payment = Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
+                'ip' => app()->request->ip(),
+                'accept' => app()->request->header('Accept'),
+                'responseData' => $responseData,
+            ]))->cancel();
+
+
+            if ($payment->success) {
+                return redirect()->route('checkout-error.view');
+            }
+
         }
 
     }

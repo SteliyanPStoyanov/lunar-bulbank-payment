@@ -7,6 +7,7 @@ use Lunar\Base\DataTransferObjects\PaymentCapture;
 use Lunar\Base\DataTransferObjects\PaymentRefund;
 use Lunar\BulBank\DataTransferObjects\PaymentCancel;
 use Lunar\Exceptions\DisallowMultipleCartOrdersException;
+use Lunar\Models\Customer;
 use Lunar\Models\Transaction;
 use Lunar\PaymentTypes\AbstractPayment;
 
@@ -36,13 +37,13 @@ class BulBankPaymentType extends AbstractPayment
                 );
             }
         }
+
         if ($this->order->transactions()->count() === 0) {
             $this->storeTransaction(
                 transaction: $this->data['responseData'],
                 success: 'Ok'
             );
         }
-
 
         $this->order->update([
             'status' => 'payment-received',
@@ -52,7 +53,7 @@ class BulBankPaymentType extends AbstractPayment
 
         return new PaymentAuthorize(
             success: (bool)$this->order->placed_at,
-            message: 'bulbank payment',
+            message: 'BulBank payment received',
             orderId: $this->order->id
         );
     }
@@ -129,16 +130,19 @@ class BulBankPaymentType extends AbstractPayment
             }
         }
 
-
         $this->order->update([
             'status' => 'payment-cancel',
             'placed_at' => now(),
+            'meta' => [
+                $this->data['responseData']
+            ]
         ]);
 
+        $this->cart->draftOrder($this->order->id);
 
         return new PaymentCancel(
             success: (bool)$this->order->placed_at,
-            message: 'bulbank payment',
+            message: 'BulBank payment cancel',
             orderId: $this->order->id
         );
     }
