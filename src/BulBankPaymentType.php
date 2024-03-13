@@ -129,12 +129,14 @@ class BulBankPaymentType extends AbstractPayment
                 );
             }
         }
-
+        $response = $this->data['responseData'];
         $this->order->update([
             'status' => 'payment-cancel',
             'placed_at' => now(),
             'meta' => [
-                $this->data['responseData']
+                "RC" => $response['RC'],
+                'status' => $response['STATUSMSG'],
+                'nonce' => $response['NONCE'],
             ]
         ]);
 
