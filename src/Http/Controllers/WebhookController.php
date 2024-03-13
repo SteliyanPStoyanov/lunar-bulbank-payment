@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Log;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Services\SaleResponse;
-use Lunar\Facades\CartSession;
 use Lunar\Facades\Payments;
 use Lunar\Models\Cart;
 
