@@ -28,9 +28,9 @@ final class WebhookController extends Controller
 
         $responseData = $saleResponse->getResponseData(false);
         Log::channel('bul-bank-log')->error("bul-bank" . json_encode($responseData));
-
+        $cartId = str_replace("0", "", $responseData['ORDER']);
         if ($responseData['RC'] === '00') {
-            $cartId = str_replace("0", "", $responseData['ORDER']);
+
             $payment = Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
                 'ip' => app()->request->ip(),
                 'accept' => app()->request->header('Accept'),
@@ -41,16 +41,14 @@ final class WebhookController extends Controller
                 return redirect()->route('checkout-success.view');
             }
         } else {
-            $cartId = str_replace("0", "", $responseData['ORDER']);
+
             $payment = Payments::driver('bulbank')->cart(Cart::find($cartId))->withData(array_merge([
                 'ip' => app()->request->ip(),
                 'accept' => app()->request->header('Accept'),
                 'responseData' => $responseData,
             ]))->cancel();
 
-
             if ($payment->success) {
-                CartSession::forget();
                 return redirect()->route('checkout-error.view', ['orderId' => $payment->orderId]);
             }
         }
