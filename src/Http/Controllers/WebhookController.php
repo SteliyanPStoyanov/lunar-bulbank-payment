@@ -25,10 +25,10 @@ final class WebhookController extends Controller
         Log::channel('bul-bank-log')->error("bul-bank" . json_encode($responseData));
 
         if ($responseData['RC'] === '00') {
-            return redirect()->route('checkout-success.view', ['responseData' => $responseData]);
+            return redirect()->route('checkout-success.view', ['responseData' => $responseData ,'payment' =>'bullbank']);
         } else {
 
-            return redirect()->route('checkout-error.view', ['responseData' => $responseData]);
+            return redirect()->route('checkout-error.view', ['responseData' => $responseData ,'payment' =>'bullbank']);
         }
 
     }
