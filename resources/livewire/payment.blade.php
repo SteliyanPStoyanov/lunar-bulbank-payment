@@ -8,7 +8,7 @@
             <label class="flex items-center justify-between text-sm font-medium cursor-pointer ml-2 "
                    for="terms">
                         <span>
-                            Съгласен съм с b <a target="_blank" href="/pages/terms" title="" class="underline">общите условия</a>
+                            Съгласен съм с<a target="_blank" href="/pages/terms" title="" class="underline">общите условия</a>
                         </span>
             </label>
         </div>
