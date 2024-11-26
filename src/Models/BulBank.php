@@ -2,10 +2,8 @@
 
 namespace Lunar\BulBank\Models;
 
-
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SignatureException;
-
 /**
  * Borica BulBank
  */
@@ -402,6 +400,52 @@ abstract class BulBank
     public function setPrivateKeyPassword(?string $privateKeyPassword): static
     {
         $this->privateKeyPassword = $privateKeyPassword;
+        return $this;
+    }
+
+      /**
+     * @return string
+     */
+    public function getMInfo()
+    {
+        if (!empty($this->mInfo)) {
+            return base64_encode(json_encode($this->mInfo));
+        }
+        return '';
+    }
+
+    /**
+     * @param  array $mInfo
+     *
+     * @return Request
+     * @throws ParameterValidationException
+     */
+    public function setMInfo($mInfo)
+    {
+        // Check for required fields (cardholderName and email or mobilePhone)
+        if (!isset($mInfo['cardholderName']) ||
+            (!isset($mInfo['email']) && !isset($mInfo['mobilePhone']))) {
+            throw new ParameterValidationException('CardholderName and email or MobilePhone must be provided');
+        }
+
+        // Check the maximum length of cardholderName
+        if (strlen($mInfo['cardholderName']) > 45) {
+            throw new ParameterValidationException('CardHolderName must be at most 45 characters');
+        }
+
+        // Check for a valid email address format
+        if (isset($mInfo['email']) && !filter_var($mInfo['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new ParameterValidationException('Email must be a valid email address');
+        }
+
+        // Check the structure for the mobile phone
+        if (isset($mInfo['mobilePhone'])) {
+            if (!isset($mInfo['mobilePhone']['cc']) || !isset($mInfo['mobilePhone']['subscriber'])) {
+                throw new ParameterValidationException('MobilePhone must contain both cc and subscriber');
+            }
+        }
+
+        $this->mInfo = $mInfo;
         return $this;
     }
 
