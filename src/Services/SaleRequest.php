@@ -14,32 +14,32 @@ class SaleRequest extends Request implements RequestInterface
     /**
      * @var string
      */
-    protected  $merchantUrl;
+    protected $merchantUrl;
 
     /**
      * @var string
      */
-    protected  $merchantName;
+    protected $merchantName;
 
     /**
      * @var string
      */
-    protected  $emailAddress;
+    protected $emailAddress;
 
     /**
      * @var string
      */
-    protected  $countryCode;
+    protected $countryCode;
 
     /**
      * @var string
      */
-    protected  $merchantGMT;
+    protected $merchantGMT;
 
     /**
      * @var string
      */
-    protected  $adCustBorOrderId;
+    protected $adCustBorOrderId;
 
     /**
      * Sale constructor.
@@ -53,7 +53,7 @@ class SaleRequest extends Request implements RequestInterface
      * Send to borica. Generate form and auto submit with JS.
      *
      * @return void
-     * @throws SignatureException|ParameterValidationException
+     * @throws Exceptions\SignatureException|ParameterValidationException
      */
     public function send()
     {
@@ -70,12 +70,13 @@ class SaleRequest extends Request implements RequestInterface
      * Generate HTML hidden form
      *
      * @return string
-     * @throws SignatureException|ParameterValidationException
+     * @throws Exceptions\SignatureException|ParameterValidationException
      */
-    public function generateForm(): string
+    public function generateForm()
     {
         $html = '<form
 	        action="' . $this->getEnvironmentUrl() . '"
+	        style="display: none;"
 	        method="POST"
 	        id="borica3dsRedirectForm"
         >';
@@ -107,11 +108,11 @@ class SaleRequest extends Request implements RequestInterface
      * Get data required for request to borica
      *
      * @return array
-     * @throws SignatureException|ParameterValidationException
+     * @throws Exceptions\SignatureException|ParameterValidationException
      */
-    public function getData(): array
+    public function getData()
     {
-        return [
+        return array_filter([
                 'NONCE' => $this->getNonce(),
                 'P_SIGN' => $this->generateSignature(),
 
@@ -132,17 +133,20 @@ class SaleRequest extends Request implements RequestInterface
 
                 'TERMINAL' => $this->getTerminalID(),
                 'BACKREF' => $this->getBackRefUrl(),
-            ] + $this->generateAdCustBorOrderId();
+
+                'M_INFO' => $this->getMInfo(),
+
+            ]) + $this->generateAdCustBorOrderId();
     }
 
     /**
      * Generate signature of data
      *
      * @return string
-     * @throws SignatureException
+     * @throws Exceptions\SignatureException
      * @throws ParameterValidationException
      */
-    public function generateSignature(): string
+    public function generateSignature()
     {
         $this->validateRequiredParameters();
 
@@ -179,8 +183,15 @@ class SaleRequest extends Request implements RequestInterface
             $this->getCurrency(),
             $this->getOrder(),
             $this->getSignatureTimestamp(),
-            $this->getNonce()
-        ] , true);
+            $this->getNonce(),
+            /**
+             * ВАЖНО: В настоящата версия на интерфейса значението на поле RFU (Reserved
+             * for Future Use) в символния низ за подписване е един байт 0x2D (знак минус "-").
+             * Поле RFU е запазено за бъдещо ползване в символния низ за подпис и не участва
+             * в заявката или отговора към/от APGW
+             */
+            '-'
+        ]);
     }
 
     /**
@@ -189,7 +200,7 @@ class SaleRequest extends Request implements RequestInterface
      * @return void
      * @throws ParameterValidationException
      */
-    public function validateRequiredParameters(): void
+    public function validateRequiredParameters()
     {
         if (empty($this->getTransactionType())) {
             throw new ParameterValidationException('Transaction type is empty!');
@@ -229,7 +240,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getCountryCode(): ?string
+    public function getCountryCode()
     {
         return $this->countryCode;
     }
@@ -242,7 +253,7 @@ class SaleRequest extends Request implements RequestInterface
      * @return SaleRequest
      * @throws ParameterValidationException
      */
-    public function setCountryCode(string $countryCode): static
+    public function setCountryCode($countryCode)
     {
         if (mb_strlen($countryCode) != 2) {
             throw new ParameterValidationException('Country code must be exact 2 characters (ISO2)');
@@ -256,7 +267,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string|null
      */
-    public function getMerchantGMT(): ?string
+    public function getMerchantGMT()
     {
         if (empty($this->merchantGMT)) {
             $this->setMerchantGMT(date('O'));
@@ -271,7 +282,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return SaleRequest
      */
-    public function setMerchantGMT(string $merchantGMT): static
+    public function setMerchantGMT($merchantGMT)
     {
         $this->merchantGMT = $merchantGMT;
         return $this;
@@ -280,7 +291,7 @@ class SaleRequest extends Request implements RequestInterface
     /**
      * @return string
      */
-    public function getMerchantName(): ?string
+    public function getMerchantName()
     {
         return $this->merchantName;
     }
@@ -290,7 +301,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return SaleRequest
      */
-    public function setMerchantName(string $merchantName): static
+    public function setMerchantName($merchantName)
     {
         $this->merchantName = $merchantName;
         return $this;
@@ -301,7 +312,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getMerchantUrl(): ?string
+    public function getMerchantUrl()
     {
         return $this->merchantUrl;
     }
@@ -314,7 +325,7 @@ class SaleRequest extends Request implements RequestInterface
      * @return SaleRequest
      * @throws ParameterValidationException
      */
-    public function setMerchantUrl(string $merchantUrl): static
+    public function setMerchantUrl($merchantUrl)
     {
         if (mb_strlen($merchantUrl) > 250) {
             throw new ParameterValidationException('Merchant URL must be maximum 250 characters');
@@ -329,7 +340,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getEmailAddress(): ?string
+    public function getEmailAddress()
     {
         return $this->emailAddress;
     }
@@ -342,7 +353,7 @@ class SaleRequest extends Request implements RequestInterface
      * @return SaleRequest
      * @throws ParameterValidationException
      */
-    public function setEmailAddress(string $emailAddress): static
+    public function setEmailAddress($emailAddress)
     {
         if (mb_strlen($emailAddress) > 80) {
             throw new ParameterValidationException('Email address for notifications must be maximum 80 characters');
@@ -356,7 +367,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return array
      */
-    private function generateAdCustBorOrderId(): array
+    private function generateAdCustBorOrderId()
     {
         $orderString = $this->getAdCustBorOrderId();
 
@@ -380,7 +391,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return string
      */
-    public function getAdCustBorOrderId(): ?string
+    public function getAdCustBorOrderId()
     {
         return $this->adCustBorOrderId;
     }
@@ -392,7 +403,7 @@ class SaleRequest extends Request implements RequestInterface
      *
      * @return SaleRequest
      */
-    public function setAdCustBorOrderId(string $adCustBorOrderId): static
+    public function setAdCustBorOrderId($adCustBorOrderId)
     {
         $this->adCustBorOrderId = $adCustBorOrderId;
         return $this;
