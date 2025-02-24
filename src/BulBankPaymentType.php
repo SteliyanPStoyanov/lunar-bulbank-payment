@@ -70,6 +70,7 @@ class BulBankPaymentType extends AbstractPayment
         $reversal = (new ReversalRequest())
             ->setSigningSchemaMacGeneral()
             ->inProduction()
+            ->setPublicKey(base_path(config('bulbank.public_cer_path')))
             ->setAmount($amount / 100)
             ->setCurrency('BGN')
             ->setOrder($transaction->order_id)
