@@ -14,16 +14,15 @@ final class CheckStatusController extends Controller
     {
 
         $statusCheckRequest = (new StatusCheckRequest())
-            ->inDevelopment()
-            ->setPrivateKey(base_path(config('bulbank.private_key_path')), config('bulbank.private_key_pass'))
-            ->setPrivateKeyPassword(config('bulbank.private_key_pass'))
+            ->setSigningSchemaMacGeneral()
+            ->inProduction()
             ->setPublicKey(base_path(config('bulbank.public_cer_path')))
             ->setTerminalID(config('bulbank.terminal_id'))
             ->setMerchantId(config('bulbank.merchant_id'))
             ->setOrder($order)
-            ->setSigningSchemaMacGeneral()
-            ->setBackRefUrl(url('back-ref-url')) // optional / required for development
-            ->setOriginalTransactionType(TransactionType::SALE()); // transaction type
+            ->setOriginalTransactionType(TransactionType::SALE())
+            ->setPrivateKey(base_path(config('bulbank.private_key_path')), config('bulbank.private_key_pass'))
+            ->setPrivateKeyPassword(config('bulbank.private_key_pass')); // transaction type
 
         $statusCheckResponse = $statusCheckRequest->send();
 
