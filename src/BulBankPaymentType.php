@@ -10,6 +10,7 @@ use Lunar\Exceptions\DisallowMultipleCartOrdersException;
 use Lunar\Models\Customer;
 use Lunar\Models\Transaction;
 use Lunar\PaymentTypes\AbstractPayment;
+use Lunar\BulBank\Services\ReversalRequest;
 
 /**
  * Class TransactionType
@@ -66,8 +67,27 @@ class BulBankPaymentType extends AbstractPayment
      */
     public function refund(Transaction $transaction, int $amount, $notes = null): PaymentRefund
     {
+        $reversal = (new ReversalRequest())
+            ->setSigningSchemaMacGeneral()
+            ->inProduction()
+            ->setAmount($amount / 100)
+            ->setCurrency('BGN')
+            ->setOrder($transaction->order_id)
+            ->setDescription(!empty($notes) ? $notes : 'Детайли плащане.')
+            ->setTerminalID(config('bulbank.terminal_id'))
+            ->setMerchantId(config('bulbank.merchant_id'))
+            ->setMerchantName('ABC PFARMACY LTD')
+            ->setPrivateKey(base_path(config('bulbank.private_key_path')), config('bulbank.private_key_pass'))
+            ->setPrivateKeyPassword(config('bulbank.private_key_pass'))
+            ->setIntRef($transaction->meta['bul_bank_info']['int_ref'])
+            ->setRrn($transaction->meta['bul_bank_info']['rrn'])
+            ->setNonce($transaction->meta['bul_bank_info']['nonce']);
+
+        $reversal->send();
+        
         return new PaymentRefund(
-            success: true
+            success: true,
+            message: 'BulBank payment refund',           
         );
     }
 
