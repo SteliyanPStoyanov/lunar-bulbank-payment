@@ -19,10 +19,10 @@ class SaleRequest extends Request implements RequestInterface
         $this->setRequestType(new HtmlForm());
     }
 
-    public function send(): Response|string|null
+    public function send()
     {
         $html = parent::send();
-        die($html);
+        return $html;
     }
 
 

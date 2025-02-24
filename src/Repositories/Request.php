@@ -446,7 +446,7 @@ abstract class Request extends BulBank
         return $this;
     }
 
-    public function generateForm(): array|string
+    public function generateForm()
     {
         return $this->getRequestType()
             ->setUrl($this->getEnvironmentUrl())
@@ -454,7 +454,7 @@ abstract class Request extends BulBank
             ->generateForm();
     }
 
-    public function send(): Response|string|null
+    public function send()
     {
         return $this->requestType
             ->setUrl($this->getEnvironmentUrl())

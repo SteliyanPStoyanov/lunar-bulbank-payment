@@ -7,6 +7,7 @@ use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\Base\DataTransferObjects\PaymentCapture;
 use Lunar\Base\DataTransferObjects\PaymentRefund;
 use Lunar\BulBank\DataTransferObjects\PaymentCancel;
+use Lunar\BulBank\DataTransferObjects\PaymentInit;
 use Lunar\Exceptions\DisallowMultipleCartOrdersException;
 use Lunar\Models\Customer;
 use Lunar\Models\Transaction;
@@ -26,7 +27,7 @@ use Lunar\BulBank\Services\SaleRequest;
 class BulBankPaymentType extends AbstractPayment
 {
 
-    public function authorize(): PaymentAuthorize
+    public function init(): PaymentInit
     {
         $this->order = $this->cart->draftOrder ?: $this->cart->completedOrder;
 
@@ -67,13 +68,36 @@ class BulBankPaymentType extends AbstractPayment
             ->setPrivateKeyPassword(config('bulbank.private_key_pass'))
             ->setAddCustomBoricaOrderId($this->order->id);
 
-        $response = $saleRequest->send();
+        $this->order->update([
+            'status' => 'awaiting-payment',
+            'placed_at' => now(),
+        ]);
 
-        Log::info(json_encode($response->isSuccessful()) . json_encode($response->getResponseData(false)));
+        return new PaymentInit(
+            success: (bool)$this->order->placed_at,
+            form: $saleRequest->generateForm(),
+            orderId: $this->order->id
+        );
+    }
+
+    public function authorize(): PaymentAuthorize
+    {
+        $this->order = $this->cart->draftOrder ?: $this->cart->completedOrder;
+
+        if (!$this->order) {
+            try {
+                $this->order = $this->cart->createOrder();
+            } catch (DisallowMultipleCartOrdersException $e) {
+                return new PaymentAuthorize(
+                    success: false,
+                    message: $e->getMessage(),
+                );
+            }
+        }
 
         if ($this->order->transactions()->count() === 0) {
             $this->storeTransaction(
-                transaction: $response->getResponseData(false),
+                transaction: $response->getResponseData(),
                 success: 'Ok'
             );
         }

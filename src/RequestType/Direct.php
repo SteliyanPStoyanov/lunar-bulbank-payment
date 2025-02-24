@@ -20,7 +20,7 @@ class Direct extends RequestType
      * @return boolean|string
      * @throws SendingException
      */
-    public function send(): bool|string
+    public function send()
     {
         curl_setopt($this->ch, CURLOPT_URL, $this->getUrl());
         curl_setopt($this->ch, CURLOPT_HEADER, 0);
@@ -38,7 +38,7 @@ class Direct extends RequestType
         return $response;
     }
 
-    public function generateForm(): array
+    public function generateForm()
     {
         return $this->getData();
     }

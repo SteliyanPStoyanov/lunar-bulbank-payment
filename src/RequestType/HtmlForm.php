@@ -2,38 +2,40 @@
 
 namespace Lunar\BulBank\RequestType;
 
-class HtmlForm extends RequestType
+use Lunar\BulBank\Repositories\Response;
+
+abstract class RequestType
 {
+    private string $url = '';
+
+    private array $data = [];
+
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(string $url): RequestType
+    {
+        $this->url = $url;
+        return $this;
+    }
+
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    public function setData(array $data): RequestType
+    {
+        $this->data = $data;
+        return $this;
+    }
+
     /**
-     * @return string
+     * @return Response|string|void
      */
-    public function send(): string
-    {
-        $html = $this->generateForm();
+    abstract public function send();
 
-        $html .= '<script>
-            document.getElementById("borica3dsRedirectForm").submit()
-        </script>';
-
-        return $html;
-    }
-
-    public function generateForm() :string
-    {
-        $html = '<form 
-	        action="' . $this->getUrl() . '" 
-	        style="display: none;" 
-	        method="POST" 
-	        id="borica3dsRedirectForm"
-        >';
-
-        $inputs = $this->getData();
-        foreach ($inputs as $key => $value) {
-            $html .= '<input type="hidden" name="' . $key . '" value="' . $value . '">';
-        }
-
-        $html .= '</form>';
-
-        return $html;
-    }
+    abstract public function generateForm();
 }

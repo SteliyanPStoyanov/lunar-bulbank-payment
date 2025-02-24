@@ -7,7 +7,7 @@ interface RequestInterface
 
     public function send();
 
-    public function generateForm(): mixed;
+    public function generateForm();
 
     public function generateSignature(): string;
 
