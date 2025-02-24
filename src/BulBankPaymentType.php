@@ -64,7 +64,8 @@ class BulBankPaymentType extends AbstractPayment
             ->setMerchantId(config('bulbank.merchant_id'))
             ->setEmailAddress('contact@abcpharmacy.bg')
             ->setPrivateKey(base_path(config('bulbank.private_key_path')), config('bulbank.private_key_pass'))
-            ->setPrivateKeyPassword(config('bulbank.private_key_pass'));
+            ->setPrivateKeyPassword(config('bulbank.private_key_pass'))
+            ->setAddCustomBoricaOrderId($this->order->id);
 
         $response = $saleRequest->send();
 
@@ -114,7 +115,8 @@ class BulBankPaymentType extends AbstractPayment
             ->setPrivateKeyPassword(config('bulbank.private_key_pass'))
             ->setIntRef($transaction->meta['bul_bank_info']['int_ref'])
             ->setRrn($transaction->meta['bul_bank_info']['rrn'])
-            ->setNonce($transaction->meta['bul_bank_info']['nonce']);
+            ->setNonce($transaction->meta['bul_bank_info']['nonce'])
+            ->setAddCustomBoricaOrderId($transaction->order_id);
 
         $reversal->send();
 

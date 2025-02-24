@@ -3,25 +3,27 @@
 
 namespace Lunar\BulBank\Tests\Unit;
 
+use Lunar\BulBank\Enums\Action;
+use Lunar\BulBank\Enums\ResponseCode;
+use Lunar\BulBank\Enums\TransactionType;
 use Lunar\BulBank\Exceptions\DataMissingException;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SignatureException;
-use Lunar\BulBank\Models\TransactionType;
 use Lunar\BulBank\Services\SaleResponse;
 use Lunar\BulBank\Tests\TestCase;
 
 class SaleResponseTest extends TestCase
 {
 
-    /**
+     /**
      * @throws DataMissingException
      * @throws ParameterValidationException|SignatureException
      */
     public function testSuccessFalseResponse()
     {
         $post = [
-            'ACTION' => 1,
-            'RC' => '00',
+            'ACTION' => Action::DUPLICATE,
+            'RC' => ResponseCode::SUCCESS,
             'APPROVAL' => 'S97539',
             'TERMINAL' => self::TERMINAL_ID,
             'TRTYPE' => TransactionType::SALE,
@@ -40,7 +42,7 @@ class SaleResponseTest extends TestCase
         $this->expectException(SignatureException::class);
 
         (new SaleResponse())
-            ->setPublicKey(__DIR__ . '/certificates/V5402041_20240226_D.csr')
+            ->setPublicKey(__DIR__ . '/certificates/V5402041-abcpharmacy.bg-T.cer')
             ->setResponseData($post)
             ->isSuccessful();
     }
@@ -54,8 +56,8 @@ class SaleResponseTest extends TestCase
         $this->markTestSkipped('Да се провери защо не верифицира добре подписа!');
 
         $post = [
-            'ACTION' => 0,
-            'RC' => '00',
+            'ACTION' => Action::SUCCESS,
+            'RC' => ResponseCode::SUCCESS,
             'APPROVAL' => 'S19527',
             'TERMINAL' => self::TERMINAL_ID,
             'TRTYPE' => TransactionType::SALE,
@@ -72,7 +74,7 @@ class SaleResponseTest extends TestCase
         ];
 
         $isSuccess = (new SaleResponse())
-            ->setPublicKey(__DIR__ . '/certificates/V5402041_20240226_D.csr')
+            ->setPublicKey(__DIR__ . '/certificates/V5402041-abcpharmacy.bg-T.cer')
             ->setResponseData($post)
             ->isSuccessful();
 

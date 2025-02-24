@@ -1,19 +1,20 @@
 <?php
 namespace Lunar\BulBank\Tests\Unit;
 
+use Lunar\BulBank\Enums\Action;
+use Lunar\BulBank\Enums\ResponseCode;
+use Lunar\BulBank\Enums\TransactionType;
 use Lunar\BulBank\Exceptions\DataMissingException;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SendingException;
 use Lunar\BulBank\Exceptions\SignatureException;
-use Lunar\BulBank\Models\TransactionType;
 use Lunar\BulBank\Services\StatusCheckRequest;
 use Lunar\BulBank\Services\StatusCheckResponse;
 use Lunar\BulBank\Tests\TestCase;
 
-
 class StatusCheckRequestTest extends TestCase
 {
-    /**
+   /**
      * @return void
      * @throws ParameterValidationException
      * @throws SignatureException
@@ -21,17 +22,18 @@ class StatusCheckRequestTest extends TestCase
     public function testSigning()
     {
         $statusCheckRequest = (new StatusCheckRequest())
-           ->setPrivateKey(__DIR__ . '/certificates/development.key')
-            ->setPublicKey(__DIR__ . '/certificates/V5402041_20240226_D.csr')
+            ->setPrivateKey(__DIR__ . '/certificates/V5402041_20240229_T_private.key')
+            ->setPrivateKeyPassword('test')
+            ->setPublicKey(__DIR__ . '/certificates/V5402041-abcpharmacy.bg-T.cer')
             ->setTerminalID(self::TERMINAL_ID)
-            ->setOrder('115233')
+            ->setOrder('114233')
             ->setOriginalTransactionType(TransactionType::SALE())
-            ->setNonce('622CAAA8BF20C5A21A917DCB8401C337');
+            ->setNonce('622CAAA8BF20C5A21A917DCB8401C336');
 
         $data = $statusCheckRequest->getData();
 
         $this->assertEquals(
-            '931C852502F8F3370CD553BD2FC0AF59C7E42A99E37DF5160ED99D8806787A344FC243920BEE43F8D11F331E6A736FCCE81DAE279342C872AAE7988305CC4F1883B7D8C3F8F300322CDD930D989CD27B10E014C498BF4F5073F519FE9B9FE401E82CA9F8D631B9618D1E8174B9B1E2CC288C228DB8DB519CF095AD0F664FC86C6ACF6BE391FCF226AA92C4E6B3A9186276F83840378100DD12DF39A22141AF15D27DCEDDA6F30BF574A2DBF6A0CA5EDD2BC0D923F70D513F00B82079704538F62270EE87C3B23E73C0B68F750C6EAF3C9089DAC4EB15A5F6FAB5EDA3C9D3353B2DAC7ED9084E2172B0694D9B24AAA784F56A721FD4EEC06FB91EC819F9D87B80',
+            '5FD6E5A6A0121A599594DB1F0FC96F2CEB4CCC7B3B829E9DBA74E1DC4AF115B774A5460AAA268DB65E04B71C6E9EB6A3F7A820C27D4EA1BC648A19BC97D2577F510F4CDF4BFD6EDA4B8D2B85564791ED6287A08282027099F07166FA8416F123FEEBBC920A33A0ED5964CA02C49A7ED7D5E61F4B5D53CC14DF542BDF4221DCDA22C5864F9F722BF989CB7A2BF2ABE0B76F823561A33F2152772312429204AAB94B58C7AFC82F64D5C20069D4A5B1DF406041CAB77BCCE88C6F84704B2B33AFC82216C2F41B92129D68933CE1C59F87CEAE6B1E8CFBE6DD4CE5898F8FE6453CC7DB7519801FB05BBDE7973E18A86AFF020121B74A65EAD2741BC1D6E39DD42564',
             $data['P_SIGN']
         );
     }
@@ -46,21 +48,21 @@ class StatusCheckRequestTest extends TestCase
     {
         $statusCheckRequest = (new StatusCheckRequest())
             ->inDevelopment()
-            ->setPrivateKey(__DIR__ . '/certificates/development.key')
-            ->setPublicKey(__DIR__ . '/certificates/V5402041_20240226_D.csr')
-            ->setMerchantId(self::MERCHANT_ID)
+            ->setPrivateKey(__DIR__ . '/certificates/V5402041_20240229_T_private.key')
+            ->setPrivateKeyPassword('test')
+            ->setPublicKey(__DIR__ . '/certificates/V5402041-abcpharmacy.bg-T.cer')
             ->setTerminalID(self::TERMINAL_ID)
-            ->setOrder('115233')
+            ->setOrder('114233')
             ->setOriginalTransactionType(TransactionType::SALE())
-            ->setNonce('622CAAA8BF20C5A21A917DCB8401C337');
+            ->setNonce('622CAAA8BF20C5A21A917DCB8401C336');
 
         $statusCheckResponse = $statusCheckRequest->send();
-dd($statusCheckResponse->getResponseData());
-        $this->assertEquals('3', $statusCheckResponse->getVerifiedData('ACTION'));
-        $this->assertEquals('-24', $statusCheckResponse->getVerifiedData('RC'));
-        $this->assertEquals('90', $statusCheckResponse->getVerifiedData('TRTYPE'));
-        $this->assertEquals('115233', $statusCheckResponse->getVerifiedData('ORDER'));
-        $this->assertEquals('622CAAA8BF20C5A21A917DCB8401C337', $statusCheckResponse->getVerifiedData('NONCE'));
+
+        $this->assertEquals(Action::PROCESSING_ERROR, $statusCheckResponse->getVerifiedData('ACTION'));
+        $this->assertEquals(ResponseCode::TRANSACTION_DATA_MISMATCH, $statusCheckResponse->getVerifiedData('RC'));
+        $this->assertEquals(TransactionType::TRANSACTION_STATUS_CHECK, $statusCheckResponse->getVerifiedData('TRTYPE'));
+        $this->assertEquals('114233', $statusCheckResponse->getVerifiedData('ORDER'));
+        $this->assertEquals('622CAAA8BF20C5A21A917DCB8401C336', $statusCheckResponse->getVerifiedData('NONCE'));
     }
 
     /**
@@ -72,8 +74,8 @@ dd($statusCheckResponse->getResponseData());
         $this->markTestSkipped('Да се провери защо не верифицира добре подписа!');
 
         $post = [
-            'ACTION' => 0,
-            'RC' => '00',
+            'ACTION' => Action::SUCCESS,
+            'RC' => ResponseCode::SUCCESS,
             'APPROVAL' => 'S78952',
             'TERMINAL' => self::TERMINAL_ID,
             'TRTYPE' => TransactionType::TRANSACTION_STATUS_CHECK,
@@ -86,16 +88,15 @@ dd($statusCheckResponse->getResponseData());
             'ECI' => '05',
             'TIMESTAMP' => '20201016084515',
             'NONCE' => '7A9A2E5CD173AF3F69A87F06E1F602ED',
-            'P_SIGN' => '931C852502F8F3370CD553BD2FC0AF59C7E42A99E37DF5160ED99D8806787A344FC243920BEE43F8D11F331E6A736FCCE81DAE279342C872AAE7988305CC4F1883B7D8C3F8F300322CDD930D989CD27B10E014C498BF4F5073F519FE9B9FE401E82CA9F8D631B9618D1E8174B9B1E2CC288C228DB8DB519CF095AD0F664FC86C6ACF6BE391FCF226AA92C4E6B3A9186276F83840378100DD12DF39A22141AF15D27DCEDDA6F30BF574A2DBF6A0CA5EDD2BC0D923F70D513F00B82079704538F62270EE87C3B23E73C0B68F750C6EAF3C9089DAC4EB15A5F6FAB5EDA3C9D3353B2DAC7ED9084E2172B0694D9B24AAA784F56A721FD4EEC06FB91EC819F9D87B80',
-
+            'P_SIGN' => 'A20DE81C5723E3A92D8D1B73C7C2B8848A42D3380E9DF9951127E5878AF989E6951F595A52C16CC9B9F690BDC0165DE8E4CF2FA5892A17C5F8026011D604AF5723DF4C35486AA0094C1C23AE9617F8BE2C11F448EA40CDB332EBAB73DE2D33A01AC1BEE83108B788D22D8653F86DFAE8BAEB17048869156D2876FD7F8E232BDB1311D5D4EB63C630EC4941EDBFC70802508F86147714CD7E671014EC8D56882070B6B203FFECE07A67FED6D20C9F4E4637E8EA5B0FE274AD4D8965CB7025BD205F259E41EAF2E48E5566099842B02FB89E7534081CFD4289F6F5F7727DAAB7EBB472FDFD9D091F57616120190732BF635D49EF9519B4CEE26D8DFBB34C2D033B'
         ];
 
         $rc = (new StatusCheckResponse())
-            ->setPublicKey(__DIR__ . '/certificates/V5402041_20240226_D.csr')
+            ->setPublicKey(__DIR__ . '/certificates/V5402041-abcpharmacy.bg-T.cer')
             ->setResponseData($post)
             ->getResponseData('RC');
 
-        $this->assertEquals('00', $rc);
+        $this->assertEquals(ResponseCode::SUCCESS, $rc);
 
     }
 }
