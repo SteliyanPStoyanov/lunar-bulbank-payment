@@ -82,8 +82,6 @@ class BulBankPaymentType extends AbstractPayment
 
     public function authorize(): PaymentAuthorize
     {
-        $this->order = $this->cart->draftOrder ?: $this->cart->completedOrder;
-
         if (!$this->order) {
             try {
                 $this->order = $this->cart->createOrder();
@@ -97,7 +95,7 @@ class BulBankPaymentType extends AbstractPayment
 
         if ($this->order->transactions()->count() === 0) {
             $this->storeTransaction(
-                transaction: $response->getResponseData(),
+                transaction: $this->data['responseData'],
                 success: 'Ok'
             );
         }

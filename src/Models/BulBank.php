@@ -202,7 +202,6 @@ abstract class BulBank
                 continue;
             }
             if (!$isResponse && $this->isSigningSchemaMacGeneral() && $value == '-') {
-                // да не слага броя символи! Заради тъпото поле RFU (Reserved for Future Use)
                 $signature .= $value;
                 continue;
             }
@@ -210,7 +209,6 @@ abstract class BulBank
         }
 
         if ($isResponse && $this->isSigningSchemaMacGeneral()) {
-            // Отново заради тъпото поле RFU (Reserved for Future Use)
             $signature .= '-';
         }
 
