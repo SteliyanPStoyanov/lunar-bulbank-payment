@@ -32,10 +32,7 @@ abstract class RequestType
         return $this;
     }
 
-    /**
-     * @return Response|string|void
-     */
     abstract public function send();
 
-    abstract public function generateForm(): array|string;
+    abstract public function generateForm();
 }

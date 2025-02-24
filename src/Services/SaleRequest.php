@@ -7,7 +7,6 @@ use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Interfaces\RequestInterface;
 use Lunar\BulBank\Enums\TransactionType;
 use Lunar\BulBank\Repositories\Request;
-use Lunar\BulBank\Repositories\Response;
 use Lunar\BulBank\RequestType\HtmlForm;
 
 class SaleRequest extends Request implements RequestInterface

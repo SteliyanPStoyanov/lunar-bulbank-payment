@@ -17,7 +17,6 @@ class Direct extends RequestType
     }
 
     /**
-     * @return boolean|string
      * @throws SendingException
      */
     public function send()
