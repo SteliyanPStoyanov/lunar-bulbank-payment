@@ -6,7 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Lunar\BulBank\Services\StatusCheckRequest;
-use Lunar\BulBank\Models\TransactionType;
+use Lunar\BulBank\Enums\TransactionType;
 
 final class CheckStatusController extends Controller
 {

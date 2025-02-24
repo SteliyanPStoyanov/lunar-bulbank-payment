@@ -4,6 +4,7 @@ namespace Lunar\BulBank\Models;
 
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SignatureException;
+
 /**
  * Borica BulBank
  */
@@ -16,70 +17,36 @@ abstract class BulBank
 
     /**
      * Default signing schema
-     *
-     * @var string
      */
     protected string $signingSchema = self::SIGNING_SCHEMA_MAC_GENERAL;
 
-    /**
-     * @var string
-     */
     protected string $merchantId;
 
-    /**
-     * @var string
-     */
     protected string $publicKey;
 
-    /**
-     * @var string
-     */
     private string $terminalID;
 
-    /**
-     * @var string
-     */
     private string $privateKey;
 
-    /**
-     * @var string|null
-     */
     private ?string $privateKeyPassword = null;
 
-    /**
-     * @var string[]
-     */
     private array $environmentUrls = [
         'development' => 'https://3dsgate-dev.borica.bg/cgi-bin/cgi_link',
         'production' => 'https://3dsgate.borica.bg/cgi-bin/cgi_link'
     ];
 
-    /**
-     * In develop mode of application
-     *
-     * @var string
-     */
     private string $environment = 'production';
 
-    /**
-     * @return boolean
-     */
     public function isProduction(): bool
     {
         return $this->environment == 'production';
     }
 
-    /**
-     * @return boolean
-     */
     public function isDevelopment(): bool
     {
         return $this->environment == 'development';
     }
 
-    /**
-     * @return string
-     */
     public function getEnvironmentUrl(): string
     {
         if ($this->environment == 'development') {
@@ -88,14 +55,7 @@ abstract class BulBank
         return $this->environmentUrls['production'];
     }
 
-    /**
-     * Switch environment to development/production
-     *
-     * @param boolean $production True - production / false - development.
-     *
-     * @return BulBank
-     */
-    public function setEnvironment(bool $production = true): static
+    public function setEnvironment(bool $production = true): BulBank
     {
         if ($production) {
             $this->inProduction();
@@ -105,33 +65,18 @@ abstract class BulBank
         return $this;
     }
 
-    /**
-     * Switch to production mode
-     *
-     * @return BulBank
-     */
-    public function inProduction(): static
+    public function inProduction(): BulBank
     {
         $this->environment = 'production';
         return $this;
     }
 
-    /**
-     * Switch to development mode
-     *
-     * @return BulBank
-     */
-    public function inDevelopment(): static
+    public function inDevelopment(): BulBank
     {
         $this->environment = 'development';
         return $this;
     }
 
-    /**
-     * Get terminal ID
-     *
-     * @return string
-     */
     public function getTerminalID(): string
     {
         return $this->terminalID;
@@ -139,13 +84,9 @@ abstract class BulBank
 
     /**
      * Set terminal ID
-     *
-     * @param string $terminalID Terminal ID.
-     *
-     * @return BulBank
      * @throws ParameterValidationException
      */
-    public function setTerminalID(string $terminalID): static
+    public function setTerminalID(string $terminalID): BulBank
     {
         if (mb_strlen($terminalID) != 8) {
             throw new ParameterValidationException('Terminal ID must be exact 8 characters!');
@@ -154,22 +95,12 @@ abstract class BulBank
         return $this;
     }
 
-    /**
-     * Get merchant ID
-     *
-     * @return string
-     */
     public function getMerchantId(): string
     {
         return $this->merchantId;
     }
 
     /**
-     * Set merchant ID
-     *
-     * @param integer|string $merchantId Merchant ID.
-     *
-     * @return BulBank
      * @throws ParameterValidationException
      */
     public function setMerchantId(int|string $merchantId): static
@@ -181,43 +112,25 @@ abstract class BulBank
         return $this;
     }
 
-    /**
-     * Switch signing schema to MAC_ADVANCED
-     *
-     * @return BulBank
-     */
-    public function setSigningSchemaMacAdvanced(): static
+    public function setSigningSchemaMacAdvanced(): BulBank
     {
         $this->signingSchema = self::SIGNING_SCHEMA_MAC_ADVANCED;
         return $this;
     }
 
-    /**
-     * Switch signing schema to MAC_EXTENDED
-     *
-     * @return BulBank
-     */
-    public function setSigningSchemaMacExtended(): static
+    public function setSigningSchemaMacExtended(): BulBank
     {
         $this->signingSchema = self::SIGNING_SCHEMA_MAC_EXTENDED;
         return $this;
     }
 
-    /**
-     * Switch signing schema to MAC_GENERAL
-     *
-     * @return BulBank
-     */
-    public function setSigningSchemaMacGeneral(): static
+    public function setSigningSchemaMacGeneral(): BulBank
     {
         $this->signingSchema = self::SIGNING_SCHEMA_MAC_GENERAL;
         return $this;
     }
 
     /**
-     * Get public key
-     *
-     * @return string
      * @throws ParameterValidationException
      */
     public function getPublicKey(): string
@@ -229,52 +142,27 @@ abstract class BulBank
         return $this->publicKey;
     }
 
-    /**
-     * Set public key
-     *
-     * @param string $publicKey Public key path.
-     *
-     * @return BulBank
-     */
-    public function setPublicKey(string $publicKey): static
+    public function setPublicKey(string $publicKey): BulBank
     {
         $this->publicKey = $publicKey;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getSigningSchema(): string
     {
         return $this->signingSchema;
     }
 
-    /**
-     * Is MAC_EXTENDED signing schema?
-     *
-     * @return boolean
-     */
     protected function isSigningSchemaMacExtended(): bool
     {
         return $this->signingSchema == self::SIGNING_SCHEMA_MAC_EXTENDED;
     }
 
-    /**
-     * Is MAC_ADVANCE signing schema?
-     *
-     * @return boolean
-     */
     protected function isSigningSchemaMacAdvanced(): bool
     {
         return $this->signingSchema == self::SIGNING_SCHEMA_MAC_ADVANCED;
     }
 
-    /**
-     * Is MAC_GENERAL signing schema?
-     *
-     * @return boolean
-     */
     protected function isSigningSchemaMacGeneral(): bool
     {
         return $this->signingSchema == self::SIGNING_SCHEMA_MAC_GENERAL;
@@ -283,18 +171,12 @@ abstract class BulBank
     /**
      * Generate signature of data with private key
      *
-     * @param array $data Данни върху които да генерира подписа.
-     *
-     * @return string
      * @throws SignatureException
      */
-    protected function getPrivateSignature(array $data , $responce = false): string
+    protected function getPrivateSignature(array $data): string
     {
-        $signature = $this->getSignatureSource($data,$responce);
+        $signature = $this->getSignatureSource($data);
 
-        /*
-         * sign signature
-         */
         $privateKey = openssl_get_privatekey('file://' . $this->getPrivateKey(), $this->getPrivateKeyPassword());
         if (!$privateKey) {
             throw new SignatureException(openssl_error_string());
@@ -305,27 +187,11 @@ abstract class BulBank
             throw new SignatureException(openssl_error_string());
         }
 
-        if (PHP_MAJOR_VERSION < 8) {
-            /**
-             * @deprecated in PHP 8.0
-             * @note       The openssl_pkey_free() function is deprecated and no longer has an effect,
-             * instead the OpenSSLAsymmetricKey instance is automatically destroyed if it is no
-             * longer referenced.
-             * @see        https://github.com/php/php-src/blob/master/UPGRADING#L397
-             */
-            openssl_pkey_free($privateKey);
-        }
-
         return strtoupper(bin2hex($signature));
     }
 
     /**
      * Generate signature source
-     *
-     * @param array $data Data of signature.
-     * @param boolean $isResponse Generate signature from response.
-     *
-     * @return string
      */
     protected function getSignatureSource(array $data, bool $isResponse = false): string
     {
@@ -351,25 +217,12 @@ abstract class BulBank
         return $signature;
     }
 
-    /**
-     * Get private key
-     *
-     * @return string
-     */
     public function getPrivateKey(): string
     {
         return $this->privateKey;
     }
 
-    /**
-     * Set private key
-     *
-     * @param string $privateKeyPath Път до файла на частният ключ.
-     * @param string|null $password Парола на частният ключ.
-     *
-     * @return BulBank
-     */
-    public function setPrivateKey(string $privateKeyPath, string $password = null): static
+    public function setPrivateKey(string $privateKeyPath, string $password = null): BulBank
     {
         $this->privateKey = $privateKeyPath;
 
@@ -380,73 +233,14 @@ abstract class BulBank
         return $this;
     }
 
-    /**
-     * Get private key password
-     *
-     * @return string|null
-     */
     public function getPrivateKeyPassword(): ?string
     {
         return $this->privateKeyPassword;
     }
 
-    /**
-     * Set private key password
-     *
-     * @param string|null $privateKeyPassword Парола на частният ключ.
-     *
-     * @return BulBank
-     */
-    public function setPrivateKeyPassword(?string $privateKeyPassword): static
+    public function setPrivateKeyPassword(?string $privateKeyPassword): BulBank
     {
         $this->privateKeyPassword = $privateKeyPassword;
         return $this;
     }
-
-      /**
-     * @return string
-     */
-    public function getMInfo()
-    {
-        if (!empty($this->mInfo)) {
-            return base64_encode(json_encode($this->mInfo));
-        }
-        return '';
-    }
-
-    /**
-     * @param  array $mInfo
-     *
-     * @return Request
-     * @throws ParameterValidationException
-     */
-    public function setMInfo($mInfo)
-    {
-        // Check for required fields (cardholderName and email or mobilePhone)
-        if (!isset($mInfo['cardholderName']) ||
-            (!isset($mInfo['email']) && !isset($mInfo['mobilePhone']))) {
-            throw new ParameterValidationException('CardholderName and email or MobilePhone must be provided');
-        }
-
-        // Check the maximum length of cardholderName
-        if (strlen($mInfo['cardholderName']) > 45) {
-            throw new ParameterValidationException('CardHolderName must be at most 45 characters');
-        }
-
-        // Check for a valid email address format
-        if (isset($mInfo['email']) && !filter_var($mInfo['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new ParameterValidationException('Email must be a valid email address');
-        }
-
-        // Check the structure for the mobile phone
-        if (isset($mInfo['mobilePhone'])) {
-            if (!isset($mInfo['mobilePhone']['cc']) || !isset($mInfo['mobilePhone']['subscriber'])) {
-                throw new ParameterValidationException('MobilePhone must contain both cc and subscriber');
-            }
-        }
-
-        $this->mInfo = $mInfo;
-        return $this;
-    }
-
 }

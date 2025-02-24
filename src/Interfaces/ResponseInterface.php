@@ -2,22 +2,9 @@
 
 namespace Lunar\BulBank\Interfaces;
 
-/**
- * Interface ResponseInterface
- *
- * @package VenelinIliev\Borica3ds
- */
 interface ResponseInterface
 {
-    /**
-     * @return array
-     */
-    public function getResponseData();
+    public function getResponseData(): array;
 
-    /**
-     * @param string $key Data key.
-     *
-     * @return mixed
-     */
-    public function getVerifiedData($key);
+    public function getVerifiedData(string $key): mixed;
 }

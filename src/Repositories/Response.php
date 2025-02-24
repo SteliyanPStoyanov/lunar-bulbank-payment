@@ -2,39 +2,59 @@
 
 namespace Lunar\BulBank\Repositories;
 
-
+use Lunar\BulBank\Enums\Action;
+use Lunar\BulBank\Enums\ResponseCode;
+use Lunar\BulBank\Enums\TransactionType;
 use Lunar\BulBank\Exceptions\DataMissingException;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
 use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Models\BulBank;
+use Lunar\BulBank\Services\ReversalResponse;
+use Lunar\BulBank\Services\SaleResponse;
+use Lunar\BulBank\Services\StatusCheckResponse;
 
 abstract class Response extends BulBank
 {
-    /**
-     * @var boolean
-     */
-    private bool $dataIsVerified = false;
+
+    protected bool $dataIsVerified = false;
+
+    protected array $responseData;
 
     /**
-     * @var array
+     * @throws DataMissingException
      */
-    private array $responseData;
-
-    /**
-     * Get verified data by key        
-     *
-     * @return mixed
-     * @throws SignatureException|ParameterValidationException|DataMissingException
-     */
-    public function getVerifiedData($key): mixed
+    public static function determineResponse(array $responseData = null): Response
     {
+        if (is_null($responseData)) {
+            $responseData = $_POST;
+        }
 
+        if (empty($responseData['TRTYPE'])) {
+            throw new DataMissingException('TRTYPE missing or empty in response data');
+        }
+
+        $response = match ($responseData['TRTYPE']) {
+            TransactionType::SALE => new SaleResponse(),
+            TransactionType::REVERSAL => new ReversalResponse(),
+            TransactionType::TRANSACTION_STATUS_CHECK => new StatusCheckResponse(),
+            default => throw new DataMissingException('Unknown transaction type'),
+        };
+
+        return $response->setResponseData($responseData);
+    }
+
+    /**
+     * @throws ParameterValidationException
+     * @throws DataMissingException
+     * @throws SignatureException
+     */
+    public function getVerifiedData(string $key): mixed
+    {
         if (!$this->dataIsVerified) {
             $this->verifyData();
         }
 
         $data = $this->getResponseData();
-
         if (!isset($data[$key])) {
             throw new DataMissingException($key . ' missing in verified response data');
         }
@@ -43,10 +63,8 @@ abstract class Response extends BulBank
     }
 
     /**
-     * Verify data with public certificate
-     *
-     * @return void
-     * @throws SignatureException|ParameterValidationException
+     * @throws ParameterValidationException
+     * @throws SignatureException
      */
     protected function verifyData(): void
     {
@@ -58,19 +76,14 @@ abstract class Response extends BulBank
 
         $dataToVerify = [];
 
-        /**
-         * Response from borica
-         */
         $responseFromBorica = $this->getResponseData(false);
 
-        /*
-         * Check required data
-         */
         foreach (array_merge($verifyingFields, ['P_SIGN']) as $key) {
             if (!array_key_exists($key, $responseFromBorica)) {
                 throw new ParameterValidationException($key . ' is missing in response data!');
             }
             if ($key != 'P_SIGN') {
+
                 if ($key == 'CURRENCY' && empty($responseFromBorica[$key]) && $responseFromBorica['TRTYPE'] == 90) {
                     $responseFromBorica['CURRENCY'] = 'USD';
                 }
@@ -84,9 +97,6 @@ abstract class Response extends BulBank
         $this->dataIsVerified = true;
     }
 
-    /**
-     * @return array
-     */
     protected function getVerifyingFields(): array
     {
         return [
@@ -108,15 +118,8 @@ abstract class Response extends BulBank
     }
 
     /**
-     * Get response data
-     *
-     * @note If response data is not set - set data to $_POST
-     *
-     * @param boolean $verify Verify data before return.
-     *
-     * @return array
-     * @throws ParameterValidationException
      * @throws SignatureException
+     * @throws ParameterValidationException
      */
     public function getResponseData(bool $verify = true): array
     {
@@ -131,14 +134,7 @@ abstract class Response extends BulBank
         return $this->responseData;
     }
 
-    /**
-     * Set response data
-     *
-     * @param array $responseData Response data from borica.
-     *
-     * @return Response
-     */
-    public function setResponseData(array $responseData): static
+    public function setResponseData(array $responseData): Response
     {
         $this->dataIsVerified = false;
         $this->responseData = $responseData;
@@ -146,53 +142,56 @@ abstract class Response extends BulBank
     }
 
     /**
-     * Verify data with public certificate
-     *
-     * @param array  $data            Данни върху които да генерира подписа.
-     * @param string $publicSignature Публичен подпис.
-     *
-     * @return void
-     * @throws ParameterValidationException|SignatureException
+     * @throws ParameterValidationException
+     * @throws SignatureException
      */
     protected function verifyPublicSignature(array $data, string $publicSignature): void
     {
-        /*
-         * generate signature
-         */
+
         $signature = $this->getSignatureSource($data, true);
 
-        /*
-         * Open certificate file
-         */
         $fp = fopen($this->getPublicKey(), "r");
         $publicKeyContent = fread($fp, filesize($this->getPublicKey()));
         fclose($fp);
 
-        /*
-         * get public key
-         */
         $publicKey = openssl_get_publickey($publicKeyContent);
         if (!$publicKey) {
             throw new SignatureException('Open public key error: '.openssl_error_string());
         }
 
-        /*
-         * verifying
-         */
         $verifyStatus = openssl_verify($signature, hex2bin($publicSignature), $publicKey, OPENSSL_ALGO_SHA256);
         if ($verifyStatus !== 1) {
             throw new SignatureException('Data signature verify error! Error: ' . openssl_error_string());
         }
+    }
 
-        if (PHP_MAJOR_VERSION < 8) {
-            /**
-             * @deprecated in PHP 8.0
-             * @note       The openssl_pkey_free() function is deprecated and no longer has an effect,
-             * instead the OpenSSLAsymmetricKey instance is automatically destroyed if it is no
-             * longer referenced.
-             * @see        https://github.com/php/php-src/blob/master/UPGRADING#L397
-             */
-            openssl_pkey_free($publicKey);
-        }
+    /**
+     * @throws ParameterValidationException
+     * @throws DataMissingException
+     */
+    public function isSuccessful(): bool
+    {
+        return $this->getResponseCode() === ResponseCode::SUCCESS &&
+            $this->getAction() === Action::SUCCESS;
+    }
+
+    /**
+     * @throws ParameterValidationException
+     * @throws SignatureException
+     * @throws DataMissingException
+     */
+    public function getResponseCode(): string
+    {
+        return $this->getVerifiedData('RC');
+    }
+
+    /**
+     * @throws SignatureException
+     * @throws DataMissingException
+     * @throws ParameterValidationException
+     */
+    public function getAction(): string
+    {
+        return $this->getVerifiedData('ACTION');
     }
 }

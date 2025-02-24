@@ -1,58 +1,31 @@
 <?php
 namespace Lunar\BulBank\Services;
 
+
+use Lunar\BulBank\Enums\TransactionType;
 use Lunar\BulBank\Exceptions\ParameterValidationException;
-use Lunar\BulBank\Exceptions\SendingException;
 use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Interfaces\RequestInterface;
-use Lunar\BulBank\Models\TransactionType;
 use Lunar\BulBank\Repositories\Request;
+use Lunar\BulBank\Repositories\Response;
+use Lunar\BulBank\RequestType\Direct;
 
 class StatusCheckRequest extends Request implements RequestInterface
 {
-
-    /**
-     * Original transaction type / TRAN_TRTYPE
-     *
-     * @var TransactionType
-     */
     private TransactionType $originalTransactionType;
 
-    /**
-     * @var array
-     */
-    private array $sendResponse;
-
-    /**
-     * StatusCheckRequest constructor.
-     */
     public function __construct()
     {
         $this->setTransactionType(TransactionType::TRANSACTION_STATUS_CHECK());
+        $this->setRequestType(new Direct());
     }
 
     /**
-     * Send data to borica
-     *
-     * @return StatusCheckResponse
-     * @throws SignatureException|ParameterValidationException|SendingException
+     * @throws ParameterValidationException
      */
-    public function send(): StatusCheckResponse
+    public function send(): Response|string|null
     {
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $this->getEnvironmentUrl());
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->getData()));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-        $response = curl_exec($ch);
-        if (curl_error($ch)) {
-            throw new SendingException(curl_error($ch));
-        }
-        curl_close($ch);
+        $response = parent::send();
 
         return (new StatusCheckResponse())
             ->setResponseData(json_decode($response, true))
@@ -60,9 +33,7 @@ class StatusCheckRequest extends Request implements RequestInterface
     }
 
     /**
-     * @return array
-     * @throws SignatureException
-     * @throws ParameterValidationException
+     * @throws ParameterValidationException|SignatureException
      */
     public function getData(): array
     {
@@ -77,32 +48,17 @@ class StatusCheckRequest extends Request implements RequestInterface
         ];
     }
 
-    /**
-     * @return TransactionType
-     */
     public function getOriginalTransactionType(): TransactionType
     {
         return $this->originalTransactionType;
     }
 
-    /**
-     * Set original transaction type
-     *
-     * @param TransactionType $tranType Original transaction type.
-     *
-     * @return StatusCheckRequest
-     */
     public function setOriginalTransactionType(TransactionType $tranType): static
     {
         $this->originalTransactionType = $tranType;
         return $this;
     }
 
-    /**
-     * @return string
-     * @throws SignatureException
-     * @throws ParameterValidationException
-     */
     public function generateSignature(): string
     {
         $this->validateRequiredParameters();
@@ -114,10 +70,6 @@ class StatusCheckRequest extends Request implements RequestInterface
         ]);
     }
 
-    /**
-     * @return void
-     * @throws ParameterValidationException
-     */
     public function validateRequiredParameters(): void
     {
         if (empty($this->getTransactionType())) {
@@ -139,15 +91,5 @@ class StatusCheckRequest extends Request implements RequestInterface
         if (empty($this->getTerminalID())) {
             throw new ParameterValidationException('TerminalID is empty!');
         }
-    }
-
-    /**
-     * @return array
-     * @throws SignatureException
-     * @throws ParameterValidationException
-     */
-    public function generateForm(): array
-    {
-        return $this->getData();
     }
 }
