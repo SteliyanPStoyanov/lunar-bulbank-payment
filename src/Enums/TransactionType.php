@@ -20,9 +20,4 @@ class TransactionType extends Enum
     const PRE_AUTHORISATION_REVERSAL = 22;
     const TRANSACTION_STATUS_CHECK = 90;
     const REVERSAL = 24;
-
-    public function getValue()
-    {
-        return $this->getValue();
-    }
 }
