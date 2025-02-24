@@ -48,6 +48,7 @@ class BulBankPaymentType extends AbstractPayment
             ->setMerchantName('ABC PFARMACY LTD')
             ->setMerchantGMT('+03')
             ->setCountryCode('BG')
+            ->setLang('BG')
             ->setMInfo(array(
                 'email' => $this->data['email'],
                 'cardholderName' => $this->data['cardholderName'],
@@ -103,6 +104,7 @@ class BulBankPaymentType extends AbstractPayment
             ->setPublicKey(base_path(config('bulbank.public_cer_path')))
             ->setAmount($amount / 100)
             ->setCurrency('BGN')
+            ->setLang('BG')
             ->setOrder($transaction->order_id)
             ->setDescription(!empty($notes) ? $notes : 'Детайли плащане.')
             ->setTerminalID(config('bulbank.terminal_id'))

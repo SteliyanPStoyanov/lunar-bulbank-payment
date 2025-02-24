@@ -15,6 +15,7 @@ final class CheckStatusController extends Controller
 
         $statusCheckRequest = (new StatusCheckRequest())
             ->setSigningSchemaMacGeneral()
+            ->setLang('BG')
             ->setEnvironment(config('bulbank.environment'))
             ->setPublicKey(base_path(config('bulbank.public_cer_path')))
             ->setTerminalID(config('bulbank.terminal_id'))
