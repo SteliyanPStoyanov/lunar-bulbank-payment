@@ -9,4 +9,5 @@ return [
     'private_key_path' => env('BULBANK_PRIVATE_KEY_PATH', ''),
     'private_key_pass' => env('BULBANK_PRIVATE_KEY_PASS', ''),
     'public_cer_path' => env('BULBANK_PUBLIC_CER_PATH', ''),
+    'environment' => env('BULBANK_PRODUCTION', false)
 ];
