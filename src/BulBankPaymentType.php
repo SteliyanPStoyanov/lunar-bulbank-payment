@@ -146,6 +146,14 @@ class BulBankPaymentType extends AbstractPayment
 
         $reversal->send();
 
+        $transaction->order->update([
+            'status' => 'payment-refund'
+        ]);
+
+        $transaction->update([
+            'type' => 'refund'
+        ]);
+
         return new PaymentRefund(
             success: true,
             message: 'BulBank payment refund',
