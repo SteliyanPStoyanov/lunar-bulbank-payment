@@ -10,6 +10,8 @@ use Lunar\BulBank\Exceptions\SignatureException;
 use Lunar\BulBank\Services\SaleResponse;
 use Lunar\Facades\Payments;
 use Lunar\Models\Cart;
+use Lunar\Models\Order;
+use App\Services\TelegramAndMailOrderMessageServices;
 
 final class WebhookController extends Controller
 {
@@ -25,11 +27,15 @@ final class WebhookController extends Controller
         Log::channel('bul-bank-log')->error("bul-bank" . json_encode($responseData));
 
         if ($responseData['RC'] === '00') {
+
+            $orderAsInt = (int) $responseData['ORDER'];
+            $order = Order::find($orderAsInt);
+            (new TelegramAndMailOrderMessageServices())->sendOrder($order);
+            
             return redirect()->route('checkout-success.view', ['responseData' => $responseData ,'payment' =>'bullbank']);
         } else {
 
             return redirect()->route('checkout-error.view', ['responseData' => $responseData ,'payment' =>'bullbank']);
         }
-
     }
 }
