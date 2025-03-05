@@ -1,6 +1,6 @@
 {
     "name": "lunar-bulbank/addon",
-    "version": "0.2.2.1",
+    "version": "0.2.2.2",
     "type": "project",
     "description": "BulBank payment functionality for Lunar.",
     "keywords": [
